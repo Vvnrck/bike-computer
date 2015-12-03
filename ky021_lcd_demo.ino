@@ -6,6 +6,7 @@
 //    Arduino GND --> Module pin -
 //    Arduino +5V --> Module PLUS (middle pin)
 //    Arduino Digital pin 3 --> Module S
+
 #define LCDbacklight() pinMode(10, INPUT) // turn on backlight
 #define LCDnoBacklight() pinMode(10, OUTPUT) // turn off backlight
 
@@ -306,7 +307,7 @@ namespace _heartPipeline {
     return (float)sum / (len-1);
   }
   
-  float corr = 0, corr_pr = 0, corr_pr_pr = 0;
+  float corr = 0, corr_pr = 0;
   const int BEATS_LEN = 20;
   long long int beats[BEATS_LEN];
   
@@ -316,17 +317,14 @@ namespace _heartPipeline {
         data[i-1] = data[i];
     data[40] = analogRead(Pins::PULSE_IN);
 
-    corr_pr_pr = corr_pr;
     corr_pr = corr;
     corr = correlate(data, heart_beat1, heart_sq1, 41);
     if (corr_pr < 0.75 && corr >= 0.75)
-    //if (corr < corr_pr && corr_pr > corr_pr_pr && corr > 0.5)
     {  
         for (int i = 1; i < BEATS_LEN; i++) 
             beats[i-1] = beats[i];
         beats[BEATS_LEN-1] = millis();
         State::bpm = max(0, 60000 / diff_mean(beats, BEATS_LEN));
-        // State::bpm /= 2;
         State::bpm = min(State::bpm, 250);
     }
   }
